@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"net/url"
 	"github.com/astaxie/beego/orm"
+	_"github.com/go-sql-driver/mysql"
 )
 
 func init() {
