@@ -1,18 +1,37 @@
 package route
 
-import "entrance/models"
+import (
+	"entrance/models"
+	"entrance/help"
+	"time"
+	"github.com/astaxie/beego"
+	"encoding/json"
+)
 
 /**
  获取数据库设置的所有url配置数组
  */
-func GetRouteConfig() map[string]interface{} {
+func GetRouteConfig() interface{} {
 
-	var url models.ServiceUrl
-	var api models.ServiceApi
-	urldata := url.List()
-	apidata := api.List()
+	routeConfig := beego.AppConfig.String("route.cache")
+	if c := help.Redis.Get(routeConfig);c == nil {
+		var url models.ServiceUrl
+		var api models.ServiceApi
+		urldata := url.List()
+		apidata := api.List()
 
-	return getHandleApi(apidata,urldata)
+		returnData := getHandleApi(apidata, urldata)
+		saveData,_ := json.Marshal(returnData)
+		help.Redis.Put(routeConfig,saveData,time.Hour)
+		return returnData
+	} else {
+		var data interface{}
+		if err := json.Unmarshal(c.([]byte),&data); err != nil {
+			panic(err)
+		} else {
+			return data
+		}
+	}
 }
 
 /**
