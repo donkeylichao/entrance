@@ -10,18 +10,50 @@ type Message struct {
 	Age int
 	Phone string
 }
+
 type EntranceController struct {
 	beego.Controller
 }
 
+/**
+ 网关入口
+ */
 func (c *MainController) Entrance() {
-	c.handle()
+
+	requestParams := c.parseRequestParameters()
+
+	if requestParams["method"] == "OPTIONS" {
+		c.Data["json"] = map[string]interface{}{"status": 1,"message": "success"}
+	} else {
+
+		matchRoute := route.GetGatewayService(requestParams)
+
+		c.Data["json"] = map[string]interface{}{"status": 1, "message": "success", "data":matchRoute}
+	}
 	c.ServeJSON()
 }
 
-func (c *MainController) handle() {
+/**
+ 解析请求参数
+ */
+func (c *MainController) parseRequestParameters() map[string]interface{} {
 
-	apidata := route.GetRouteConfig()
+	/* 获取请求参数 */
+	method := c.Ctx.Request.Method
+	header := c.Ctx.Request.Header
+	body := c.Ctx.Request.Body
+	form := c.Ctx.Request.Form
+	multipart := c.Ctx.Request.MultipartForm
+	path := c.Ctx.Request.RequestURI
 
-	c.Data["json"] = map[string]interface{}{"success": 0, "message": "111","data":apidata}
+	requestParams := make(map[string]interface{})
+
+	requestParams["method"] = method
+	requestParams["header"] = header
+	requestParams["body"] = body
+	requestParams["form"] = form
+	requestParams["multipart"] = multipart
+	requestParams["path"] = path
+
+	return requestParams
 }
