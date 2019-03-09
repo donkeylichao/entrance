@@ -212,7 +212,8 @@ func parseServicePath(path string ,matchRoute interface{}) interface{} {
 		returnPath +=  "/"+apiPathSlice[k]
 	}
 
-	return returnPath
+	//组装request请求转发的真实路径
+	return matchRoute.(map[string]interface{})["ServiceUrl"].(string) + returnPath
 }
 
 /**

@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"entrance/service/route"
+	"entrance/service/http"
 )
 
 type Message struct {
@@ -22,13 +23,25 @@ func (c *MainController) Entrance() {
 
 	requestParams := c.parseRequestParameters()
 
+	response := make(map[string]interface{})
+	response["status"] = 1
+	response["success"] = "success"
+
 	if requestParams["method"] == "OPTIONS" {
-		c.Data["json"] = map[string]interface{}{"status": 1,"message": "success"}
+		c.Data["json"] = response
 	} else {
 
 		matchRoute := route.GetGatewayService(requestParams)
-
-		c.Data["json"] = map[string]interface{}{"status": 1, "message": "success", "data":matchRoute}
+		if matchRoute == nil {
+			matchRoute = "请求路由不存在"
+			response["success"] = "fail"
+			response["status"] = "0"
+		} else {
+			response,_,_ := http.Request(matchRoute.(string),requestParams)
+			matchRoute = response
+		}
+		response["data"] = matchRoute
+		c.Data["json"] = response
 	}
 	c.ServeJSON()
 }
