@@ -1,4 +1,4 @@
-# gateway
+# entrance
 beego框架开发的网关
 
 #### beego gateway
